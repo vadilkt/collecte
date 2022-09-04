@@ -123,7 +123,7 @@ export default () => {
                 <div className="mb-2 block">
                   <Label
                     htmlFor="anciennete"
-                    value="Anciennete ( en mois )"
+                    value="Ancienneté ( en mois )"
                   />
                 </div>
                 <TextInput
@@ -156,7 +156,7 @@ export default () => {
               <div className="mb-2 block">
                 <Label
                   htmlFor="superieur"
-                  value="Superieur hierachique"
+                  value="Supérieur hierachique"
                 />
               </div>
               <TextInput

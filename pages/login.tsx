@@ -80,7 +80,7 @@ export default () => {
               />
             </div>
             <div className="flex justify-between items-center mt-4">
-              <a href="#" className="text-blue-500 text-sm"> Mot de passe oublie ? </a>
+              <a href="#" className="text-blue-500 text-sm"> Mot de passe oublié ? </a>
                 <Button color="success" onClick={submit} >
                   <Loading loading={loading} item="login" text="Connexion" alt="En cours..." />
                 </Button>

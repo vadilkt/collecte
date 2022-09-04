@@ -29,7 +29,7 @@ export default () => {
   const submit = () => {
     setLoading(() => createLoading("submit"))
     Api.put(`objectifs/${objectif.id}`, objectif).then( res => {
-      setSuccess("Objectif modifie avec succes");
+      setSuccess("Objectif modifié avec succes");
     }).catch( error => catchError(error, setErrors)).finally(()=> {
         setLoading((values) => closeLoading(values, "submit") )
     })
@@ -48,7 +48,7 @@ export default () => {
 
     <Dashboard breadcrumb={[
       {link: "/admin/actions/objectifs", label: "Actions commerciales"},
-      {link: "/admin/actions/modifier-objectif", label: "Modifier objectif"}
+      {link: "#", label: "Modifier objectif"}
     ]}>
         <h3 className="text-xl mt-4 text-gray-700"> Modifier un objectif </h3>
         <div className="mt-4 bg-white p-8 rounded-lg">

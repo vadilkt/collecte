@@ -38,7 +38,7 @@ export default () => {
     <Dashboard breadcrumb={
         [
             {link: "/admin/actions/objectifs", label: "Actions commerciales"},
-            {link: "/admin/actions/creer-objectif", label: "Creer objectif"}
+            {link: "/admin/actions/creer-objectif", label: "Créer objectif"}
         ]
     }>
         <h3 className="text-xl mt-4 text-gray-700"> Créer un objectif </h3>

@@ -53,7 +53,7 @@ export default () => {
     <Dashboard breadcrumb={
         [
             {link: "/admin/actions/objectifs", label: "Actions commerciales"},
-            {link: "/admin/actions/creer-objectif", label: "Creer objectif"}
+            {link: "#", label: "Assigner objectif"}
         ]
     }>
         <h3 className="text-xl mt-4 text-gray-700"> Assigner un objectif </h3>
@@ -109,7 +109,7 @@ export default () => {
                 <div className="mb-2 block">
                   <Label
                     htmlFor="date_debut"
-                    value="Date de debut"
+                    value="Date de début"
                   />
                 </div>
                 <TextInput
