@@ -2,10 +2,44 @@ import Head from "next/head"
 import Layout from "../components/Layout";
 import {Label, TextInput, Button} from "flowbite-react";
 
+import { useState} from "react";
+
 import Link from "next/link";
 import Logo from "../components/logo";
 
+import { UserLogin, userLoginDefault } from "../libs/types";
+
+import { ErrorsType, LoadingType } from "../libs/types";
+import { createLoading,  closeLoading, catchError} from "../libs/helpers";
+
+import Api from "../libs/api";
+import Auth from "../libs/auth";
+
+import ModalErrors from "../components/modals/modal-errors";
+import Loading from "../components/loading";
+
+
 export default () => {
+
+  const [user, setUser] = useState<UserLogin>(userLoginDefault)
+  const [errors,setErrors] = useState<ErrorsType>({});
+  const [loading, setLoading] = useState<LoadingType>({});
+
+  const handleChange = (e) : void => {
+    const valueChanged: Record<string,string> = { [e.target.name] : e.target.value};
+    setUser((values) => ({...values,...valueChanged}))
+  }
+
+  const submit = () => {
+    setLoading(() => createLoading("login"))
+    Api.post("login", user).then( res => {
+      Auth.save(res.data);
+      window.location.assign("/user/actions/objectifs")
+    }).catch( error => catchError(error, setErrors)).finally(()=> {
+        setLoading((values) => closeLoading(values, "login") )
+    })
+  }
+
   return <Layout>
     <Head>
       <title> Dekap - Login </title>
@@ -25,6 +59,8 @@ export default () => {
                 id="email1"
                 type="email"
                 placeholder=""
+                name="email"
+                onChange={(e) => handleChange(e)}
                 required={true}
               />
             </div>
@@ -38,16 +74,16 @@ export default () => {
               <TextInput
                 id="password"
                 type="password"
+                name="password"
+                onChange={(e) => handleChange(e)}
                 required={true}
               />
             </div>
             <div className="flex justify-between items-center mt-4">
               <a href="#" className="text-blue-500 text-sm"> Mot de passe oublie ? </a>
-              <a href="/user/actions/objectifs">
-                <Button color="success" >
-                  Connexion
+                <Button color="success" onClick={submit} >
+                  <Loading loading={loading} item="login" text="Connexion" alt="En cours..." />
                 </Button>
-              </a>
             </div>
             <div className="border-t border-gray-200 mt-4 pt-4">
               <Link href="/register">
@@ -59,5 +95,6 @@ export default () => {
           </form>
         </div>  
     </div>
+    <ModalErrors errors={errors} />
   </Layout>
 }

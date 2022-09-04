@@ -1,9 +1,51 @@
 import Head from "next/head"
 import Dashboard from "../../../components/admin-dashboard";
 import {TextInput, Button, Label} from "flowbite-react";
+import {useState, useEffect } from "react";
 
+import { extractFromUrlQuery } from "../../../libs/helpers";
+
+import Api from "../../../libs/api";
+
+import ModalErrors from "../../../components/modals/modal-errors";
+import ModalSuccess from "../../../components/modals/modal-success";
+import Loading from "../../../components/loading";
+
+import { ErrorsType, LoadingType, ObjectifType, objectifDefault, AssignationType, assignationDefault } from "../../../libs/types";
+import { createLoading,  closeLoading, catchError} from "../../../libs/helpers";
 
 export default () => {
+
+  const [errors,setErrors] = useState<ErrorsType>({});
+  const [loading, setLoading] = useState<LoadingType>({});
+  const [objectif, setObjectif] = useState<ObjectifType>(objectifDefault);
+  const [assignation, setAssignation] = useState<AssignationType>(assignationDefault);
+
+  const handleChange = (e) : void => {
+    const valueChanged: Record<string,string> = { [e.target.name] : e.target.value};
+    setAssignation((values) => ({...values,...valueChanged}))
+  }
+
+  const submit = () => {
+    setLoading(() => createLoading("submit"))
+    Api.post(`assignations`, assignation).then( res => {
+      window.location.assign("/admin/actions/consulter-donnees");
+    }).catch( error => catchError(error, setErrors)).finally(()=> {
+        setLoading((values) => closeLoading(values, "submit") )
+    })
+  }
+
+  useEffect(() => {
+    Api.get(`objectifs/${extractFromUrlQuery("id")}`).then( res => {
+       setAssignation((values) => ({
+        ...values,
+        objectif_id: res.data.id,
+        intitule_obj: res.data.intitule_obj,
+        intitule_eval: res.data.intitule_eval
+       }));
+    }).catch( error => catchError(error, setErrors))
+  },[]);
+
   return <>
     <Head>
       <title> Dekap - Action </title>
@@ -16,7 +58,7 @@ export default () => {
     }>
         <h3 className="text-xl mt-4 text-gray-700"> Assigner un objectif </h3>
         <div className="mt-4 bg-white p-8 rounded-lg">
-            <form className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
             <div>
               <div className="mb-2 block">
                 <Label
@@ -26,8 +68,7 @@ export default () => {
               </div>
               <TextInput
                 type="text"
-                value="Nom de l'objectif a assigner"
-                required={true}
+                value={assignation.intitule_obj}
                 disabled={true}
               />
             </div>
@@ -42,8 +83,7 @@ export default () => {
               <TextInput
                 id="evaluateur"
                 type="text"
-                value="Nom de l'evaluateur a assigner"
-                required={true}
+                value={assignation.intitule_eval}
                 disabled={true}
               />
             </div>
@@ -57,7 +97,9 @@ export default () => {
               </div>
               <TextInput
                 id="result"
-                type="text"
+                type="number"
+                name="valeur_eval"
+                onChange={(e) =>  handleChange(e)}
                 required={true}
               />
             </div>
@@ -73,7 +115,8 @@ export default () => {
                 <TextInput
                   id="date_debut"
                   type="date"
-                  placeholder=""
+                  name="date_deb"
+                  onChange={(e) =>  handleChange(e)}
                   required={true}
                 />
               </div>
@@ -87,19 +130,21 @@ export default () => {
                 <TextInput
                   id="date_fin"
                   type="date"
-                  placeholder=""
+                  name="date_fin"
+                  onChange={(e) =>  handleChange(e)}
                   required={true}
                 />
               </div>
             </div>
 
             <div className="flex justify-between items-center mt-4">
-              <Button color="success" >
-                Assigner l'objectif
+              <Button color="success" onClick={submit} >
+                <Loading item="submit" loading={loading} text="Assigner l'objectif" alt="En cours..."/>
               </Button>
             </div>
-          </form>
+          </div>
         </div>
+        <ModalErrors errors={errors} />
     </Dashboard>
   </>
 }

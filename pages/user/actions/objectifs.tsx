@@ -2,6 +2,15 @@ import Head from "next/head"
 import Dashboard from "../../../components/dashboard";
 import {Table} from "flowbite-react";
 
+import { AssignationType, ErrorsType, userDefault, UserType } from "../../../libs/types";
+import { useEffect, useState } from "react";
+
+import ModalErrors from "../../../components/modals/modal-errors";
+
+import Api from "../../../libs/api";
+import { User } from "../../../components/icons";
+import { userAgent } from "next/server";
+
 const objectifs : {name: string, status: string, result: string, date_debut: string, date_fin: string}[] = [
   {
     name: "Objectif 2",
@@ -20,14 +29,27 @@ const objectifs : {name: string, status: string, result: string, date_debut: str
 ]
 
 export default () => {
+
+  const [assignations, setAssignations] = useState<AssignationType[]>([]);
+  const [errors,setErrors] = useState<ErrorsType>({});
+  const [user, setUser] = useState<UserType>(userDefault);
+
+  useEffect(()=>{
+    if(user.id != undefined){
+      Api.get(`assignations/user/${user.id}`).then( res => {
+        setAssignations(() => res.data);
+      })
+    }
+  },[user]);
+
   return <>
     <Head>
       <title> Dekap - Action </title>
     </Head>
     <Dashboard breadcrumb={[
-      {link: "/admin/actions/objectifs", label: "Actions commerciales"},
-      {link: "/admin/actions/objectifs", label: "Objectifs"}
-    ]}>
+      {link: "/user/actions/objectifs", label: "Actions commerciales"},
+      {link: "/user/actions/objectifs", label: "Objectifs"}
+    ]} user={user}  setUser={setUser}>
         <h3 className="text-xl mt-4 text-gray-700"> Les objectifs </h3>
         <div className="mt-4">
           <Table>
@@ -53,24 +75,24 @@ export default () => {
             </Table.Head>
             <Table.Body className="divide-y">
               {
-                objectifs.map( objectif => <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                  <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    {objectif.name}
+                assignations.map( item => <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                  <Table.Cell className="font-medium text-gray-900 dark:text-white w-[300px]">
+                    {item.objectif.intitule_obj}
                   </Table.Cell> 
                   <Table.Cell>
-                    {objectif.result}
+                    {item.valeur_eval}
                   </Table.Cell>
                   <Table.Cell>
-                    {objectif.date_debut}
+                    {item.date_deb}
                   </Table.Cell>
                   <Table.Cell>
-                    {objectif.date_fin}
+                    {item.date_fin}
                   </Table.Cell>
-                  <Table.Cell>
-                    {objectif.status}
+                  <Table.Cell className={`${item.filled ? 'text-green-600' : 'text-red-600'}`}>
+                    {item.filled ? "Données remplies" : "En attente"}
                   </Table.Cell>
                   <Table.Cell className="flex gap-2">
-                    <a href="/user/actions/entrer-resultat" className="border border-green-700 px-4 py-1.5 text-xs rounded-lg "> Gerer </a>
+                    <a href={`/user/actions/${item.filled ? "modifier-resultat?id="+item.score_id : "entrer-resultat?id="+item.id}`} className="border border-green-700 px-4 py-1.5 text-xs rounded-lg "> Gerer </a>
                   </Table.Cell>
                 </Table.Row>)
               }        

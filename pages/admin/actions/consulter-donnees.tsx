@@ -2,24 +2,25 @@ import Head from "next/head"
 import Dashboard from "../../../components/admin-dashboard";
 import {Table} from "flowbite-react";
 
-const objectifs : {name: string, status: string, result: string, date_debut: string, date_fin: string}[] = [
-  {
-    name: "Objectif 2",
-    date_debut: "2022-07-10",
-    date_fin: "2022-08-10",
-    result: "100",
-    status: "Terminé"
-  },
-  {
-    name: "Objectif 1",
-    date_debut: "2022-08-20",
-    date_fin: "2022-09-30",
-    result: "100",
-    status: "En cours"
-  },
-]
+import { AssignationType, ErrorsType } from "../../../libs/types";
+import { useEffect, useState } from "react";
+
+import ModalErrors from "../../../components/modals/modal-errors";
+
+import Api from "../../../libs/api";
 
 export default () => {
+
+  const [assignations, setAssignations] = useState<AssignationType[]>([]);
+  const [errors,setErrors] = useState<ErrorsType>({});
+
+
+  useEffect(()=>{
+    Api.get("assignations").then( res => {
+      setAssignations(() => res.data);
+    })
+  },[]);
+
   return <>
     <Head>
       <title> Dekap - Action </title>
@@ -45,38 +46,33 @@ export default () => {
                   Date de fin
                 </Table.HeadCell>
                 <Table.HeadCell>
-                  Status
-                </Table.HeadCell>
-                <Table.HeadCell>
                   Actions
                 </Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
               {
-                objectifs.map( objectif => <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                  <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    {objectif.name}
+                assignations.map( item => <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                  <Table.Cell className="w-[400px] font-medium text-gray-900 dark:text-white">
+                    {item.objectif.intitule_obj}
                   </Table.Cell> 
                   <Table.Cell>
-                    {objectif.result}
+                    {item.valeur_eval}
                   </Table.Cell>
                   <Table.Cell>
-                    {objectif.date_debut}
+                    {item.date_deb}
                   </Table.Cell>
                   <Table.Cell>
-                    {objectif.date_fin}
-                  </Table.Cell>
-                  <Table.Cell>
-                    {objectif.status}
+                    {item.date_fin}
                   </Table.Cell>
                   <Table.Cell className="flex gap-2">
-                    <a href="/admin/actions/consulter-objectif" className="border border-green-700 px-4 py-1.5 text-xs rounded-lg "> Consulter </a>
+                    <a href={`/admin/actions/consulter-objectif?id=${item.id}`} className="border border-green-700 px-4 py-1.5 text-xs rounded-lg "> Consulter </a>
                   </Table.Cell>
                 </Table.Row>)
               }        
             </Table.Body>
           </Table>
         </div>
+        <ModalErrors errors={errors} />
     </Dashboard>
   </>
 }

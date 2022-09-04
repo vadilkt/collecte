@@ -5,6 +5,18 @@ import SearchInput from "./search-input";
 import Image from "next/image";
 import Link from "next/link";
 
+import { useState, useEffect} from "react";
+import { LoadingType, AdminType,adminDefault } from "../libs/types";
+
+import { closeLoading, checkLoading} from "../libs/helpers";
+import { Logout } from "./icons";
+
+
+import Api from "../libs/api";
+import Auth from "../libs/auth";
+
+import Loadable from "../components/loadable";
+
 type DashboardProps = {
     children: React.ReactNode,
     breadcrumb : {
@@ -14,7 +26,29 @@ type DashboardProps = {
 }
 
 export default ( {children, breadcrumb} :  DashboardProps) => {
-  return <>
+
+    const [loading, setLoading] = useState<LoadingType>({ page: true});
+    const [admin, setAdmin] = useState<AdminType>(adminDefault);
+
+    useEffect(() => {
+
+        // Recuperer les informations sur l'utilisateur.
+        Api.get(`admins/${Auth.getAdmin()}`).then( res => {
+            // Recuperer les informations.
+            setAdmin(res.data);
+        })
+
+        if(!Auth.checkAdmin()){
+            window.location.assign("/");
+        }
+
+        setTimeout(() => {
+            setLoading(() => closeLoading(loading,"page"))
+        },500)
+
+    },[])
+
+  return<Loadable loading={ checkLoading(loading,"page")}>
     <div className="flex bg-gray-100 min-h-screen">
         <div className="w-1/5 fixed left-0 top-0 bg-white rounded-lg  h-screen">
             <div className="">
@@ -43,6 +77,12 @@ export default ( {children, breadcrumb} :  DashboardProps) => {
                                             <a href="" className="flex items-center p-2 pl-11 w-full font-normal rounded-lg transition duration-75 group hover:bg-gray-100">Consulter les données</a>
                                         </Link>
                                     </li>
+                                    <li>
+                                        <button onClick={ () => Auth.logout()} className="shadow flex items-center p-2  font-normal text-gray-800 rounded-lg ">
+                                            <Logout  className="w-6 h-6 text-gray-500"/>
+                                            <span className="ml-3"> Deconnexion </span>
+                                        </button>
+                                    </li>
                                 </ul>
                             </li>
                         </ul>
@@ -67,10 +107,13 @@ export default ( {children, breadcrumb} :  DashboardProps) => {
                         }
                     </Breadcrumb>
                 </div>
-                <div className="flex gap-4">
-                    <form>   
+                <div className="flex gap-4 items-center">
+                    <div>
+                        {admin.username}
+                    </div>
+                    {/* <form>   
                        <SearchInput label="Rechercher" />
-                    </form>
+                    </form> */}
                     <div className="rounded-full overflow-hidden">
                         <Image
                             src="/images/Logo.jpg" 
@@ -84,5 +127,5 @@ export default ( {children, breadcrumb} :  DashboardProps) => {
             {children}
         </div>
     </div>
-  </>
+  </Loadable>
 }

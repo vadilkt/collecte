@@ -4,6 +4,15 @@ import { Breadcrumb, Avatar } from "flowbite-react";
 import SearchInput from "./search-input";
 import Image from "next/image";
 import Link from "next/link";
+import Loadable from "../components/loadable";
+
+import Auth from "../libs/auth";
+import Api from "../libs/api";
+
+import { useEffect, useState } from "react";
+import { LoadingType, userDefault, UserType } from "../libs/types";
+import { checkLoading, closeLoading } from "../libs/helpers";
+import { Logout } from "./icons";
 
 type DashboardProps = {
     children: React.ReactNode,
@@ -11,10 +20,33 @@ type DashboardProps = {
         link: string,
         label: string
     }[],
+    user?:UserType,
+    setUser?: any
 }
 
-export default ( {children, breadcrumb} :  DashboardProps) => {
-  return <>
+export default ( {children, breadcrumb,user, setUser} :  DashboardProps) => {
+
+    const [loading, setLoading] = useState<LoadingType>({ page: true});
+
+    useEffect(() => {
+
+        // Recuperer les informations sur l'utilisateur.
+        Api.get(`users/${Auth.getUser()}`).then( res => {
+            // Recuperer les informations.
+            setUser(res.data);
+        })
+
+        if(!Auth.check()){
+            window.location.assign("/");
+        }
+
+        setTimeout(() => {
+            setLoading(() => closeLoading(loading,"page"))
+        },500)
+
+    },[])
+
+  return <Loadable loading={ checkLoading(loading,"page")}>
     <div className="flex bg-gray-100 min-h-screen">
         <div className="w-1/5 fixed left-0 top-0 bg-white rounded-lg  h-screen">
             <div className="">
@@ -34,6 +66,12 @@ export default ( {children, breadcrumb} :  DashboardProps) => {
                                         </Link>
                                     </li>                                   
                                 </ul>
+                            </li>
+                            <li>
+                                <button onClick={ () => Auth.logout()} className="shadow flex items-center p-2  font-normal text-gray-800 rounded-lg ">
+                                    <Logout  className="w-6 h-6 text-gray-500"/>
+                                    <span className="ml-3"> Deconnexion </span>
+                                </button>
                             </li>
                         </ul>
                     </div>
@@ -57,10 +95,13 @@ export default ( {children, breadcrumb} :  DashboardProps) => {
                         }
                     </Breadcrumb>
                 </div>
-                <div className="flex gap-4">
-                    <form>   
+                <div className="flex gap-4 items-center">
+                    {/* <form>   
                        <SearchInput label="Rechercher" />
-                    </form>
+                    </form> */}
+                    <div>
+                        {user.noms} 
+                    </div>
                     <div className="rounded-full overflow-hidden">
                         <Image
                             src="/images/Logo.jpg" 
@@ -74,5 +115,5 @@ export default ( {children, breadcrumb} :  DashboardProps) => {
             {children}
         </div>
     </div>
-  </>
+  </Loadable>
 }

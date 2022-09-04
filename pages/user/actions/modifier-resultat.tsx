@@ -10,6 +10,7 @@ import Loading from "../../../components/loading";
 
 import { ErrorsType, LoadingType,  ScoreType,scoreDefault, UserType, userDefault, AssignationType, assignationDefault } from "../../../libs/types";
 import { createLoading,  closeLoading, catchError, extractFromUrlQuery} from "../../../libs/helpers";
+import ModalSuccess from "../../../components/modals/modal-success";
 
 const moyens : string[] = [
   "Téléphone",
@@ -23,6 +24,7 @@ const moyens : string[] = [
 export default () => {
 
   const [errors,setErrors] = useState<ErrorsType>({});
+  const [success, setSuccess] = useState<string>("");
   const [loading, setLoading] = useState<LoadingType>({});
   const [score, setScore] = useState<ScoreType>(scoreDefault);
   const [assignation, setAssignation] = useState<AssignationType>(assignationDefault);
@@ -30,13 +32,13 @@ export default () => {
 
   useEffect(() => {
     if( user.id != undefined){
-      Api.get(`assignations/${extractFromUrlQuery("id")}`).then( res => {
-        setAssignation(res.data);
-        setScore((values) => ({
-          ...values,
-          assignation_id: res.data.id,
-          user_id: user.id
-        }))
+      Api.get(`scores/${extractFromUrlQuery("id")}`).then( res => {
+        setAssignation(res.data.assignation);
+        const newScore = {
+            ...res.data,
+            moyens: JSON.parse(res.data.moyens),
+        }
+        setScore(() => newScore)
       })
     }
   },[user]);
@@ -56,8 +58,8 @@ export default () => {
 
   const submit = () => {
     setLoading(() => createLoading("submit"))
-    Api.post("scores", score).then( res => {
-      window.location.assign("/user/actions/objectifs")
+    Api.put(`scores/${score.id}`, score).then( res => {
+      setSuccess("Les modifications on ete enregistrees avec succes");
     }).catch( error => catchError(error, setErrors)).finally(()=> {
         setLoading((values) => closeLoading(values, "submit") )
     })
@@ -69,11 +71,11 @@ export default () => {
     </Head>
     <Dashboard breadcrumb={
         [
-            {link: "/admin/actions/objectifs", label: "Actions commerciales"},
-            {link: "#", label: "Entrer les resultats"}
+            {link: "/user/actions/objectifs", label: "Actions commerciales"},
+            {link: "#", label: "Modifier resultat"}
         ]
     } user={user}  setUser={setUser}>
-        <h3 className="text-xl mt-4 text-gray-700"> Entrer les resultats </h3>
+        <h3 className="text-xl mt-4 text-gray-700"> Modifier resultat </h3>
         <div className="mt-4 bg-white p-8 rounded-lg">
             <form className="flex flex-col gap-4">
 
@@ -129,6 +131,7 @@ export default () => {
                 id="result"
                 type="text"
                 name="valeur_score"
+                value={score.valeur_score}
                 onChange={(e) => handleChange(e)}
                 required={true}
               />
@@ -142,6 +145,7 @@ export default () => {
           </form>
         </div>
         <ModalErrors errors={errors} />
+        <ModalSuccess success={success} setSuccess={setSuccess} />
     </Dashboard>
   </>
 }
