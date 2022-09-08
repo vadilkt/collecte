@@ -275,7 +275,7 @@ export default () => {
                 </div>
                 <TextInput
                   id="password_confirmation"
-                  type="text"
+                  type="password"
                   name="password_confirmation"
                   onChange={(e) => handleChange(e)}
                   placeholder=""
